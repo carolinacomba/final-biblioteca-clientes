@@ -1,11 +1,13 @@
 package com.library.biblioteca.service.Impl;
 
+import com.library.biblioteca.clients.PersonaRestClient;
 import com.library.biblioteca.dto.ClienteDTO;
 import com.library.biblioteca.enums.EstadoLibro;
 import com.library.biblioteca.model.Libro;
 import com.library.biblioteca.model.Registro;
 import com.library.biblioteca.repository.LibroRepository;
 import com.library.biblioteca.repository.RegistroRepository;
+import org.aspectj.weaver.patterns.PerSingleton;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -19,7 +21,10 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
+import static javax.management.Query.eq;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
 class BibliotecaServiceImplTest {
@@ -32,6 +37,9 @@ class BibliotecaServiceImplTest {
     @Mock
     RestTemplate restTemplate;
 
+    @Mock
+    PersonaRestClient personaRestClient;
+
     @InjectMocks
     BibliotecaServiceImpl bibliotecaServiceImpl;
 
@@ -42,21 +50,61 @@ class BibliotecaServiceImplTest {
 
     @Test
     void alquilarLibros() {
-        List<Libro> libros = List.of(new Libro(1L, "1234", "titulo1", "autor1", EstadoLibro.DISPONIBLE),
-                new Libro(2L, "5678", "titulo2", "autor2", EstadoLibro.DISPONIBLE));
-        Registro registro = new Registro(1L, 1L, "nombre1",
-                LocalDate.now(), LocalDate.now(), libros, BigDecimal.valueOf(23));
-        when(libroRepository.findByIsbn("1234")).thenReturn(libros.get(0));
-        when(libroRepository.findByIsbn("5678")).thenReturn(libros.get(1));
-        when(restTemplate.getForObject("http://localhost:8081/api/personas/aleatorio", ClienteDTO.class))
-                .thenReturn(new ClienteDTO(1L, "nombre1", "domicilio"));
-        when(registroRepository.save(registro)).thenReturn(registro);
+        List<String> isbns = new ArrayList<>();
+        isbns.add("1234");
+        isbns.add("5678");
 
+        Libro libro1 = new Libro();
+        libro1.setIsbn("1234");
+        libro1.setEstado(EstadoLibro.DISPONIBLE);
 
-        Registro expected = bibliotecaServiceImpl.alquilarLibros(List.of("1234", "5678"));
+        Libro libro2 = new Libro();
+        libro2.setIsbn("5678");
+        libro2.setEstado(EstadoLibro.DISPONIBLE);
 
-        assertEquals(expected, registro);
+        List<Libro> libros = new ArrayList<>();
+        libros.add(libro1);
+        libros.add(libro2);
+
+        ClienteDTO cliente = new ClienteDTO();
+        cliente.setId(1L);
+        cliente.setNombre("Juan");
+
+        Registro expected = new Registro(1L, 1L, "Juan", LocalDate.now(), LocalDate.now(), libros, null);
+
+        when(libroRepository.findByIsbn("1234")).thenReturn(libro1);
+        when(libroRepository.findByIsbn("5678")).thenReturn(libro2);
+        when(personaRestClient.getClienteAleatorio()).thenReturn(cliente);
+        when(registroRepository.save(any(Registro.class))).thenReturn(expected);
+        Registro actual = bibliotecaServiceImpl.alquilarLibros(isbns);
+
+        assertEquals(expected, actual);
     }
+
+    @Test
+    void testAlquilarLibrosThrowIllegalStateException(){
+        List<String> isbns = new ArrayList<>();
+        isbns.add("1234");
+        isbns.add("5678");
+
+        Libro libro1 = new Libro();
+        libro1.setIsbn("1234");
+        libro1.setEstado(EstadoLibro.RESERVADO);
+
+        Libro libro2 = new Libro();
+        libro2.setIsbn("5678");
+        libro2.setEstado(EstadoLibro.DISPONIBLE);
+
+        List<Libro> libros = new ArrayList<>();
+        libros.add(libro1);
+        libros.add(libro2);
+
+        when(libroRepository.findByIsbn("1234")).thenReturn(libro1);
+        when(libroRepository.findByIsbn("5678")).thenReturn(libro2);
+
+        assertThrows(IllegalStateException.class, () -> bibliotecaServiceImpl.alquilarLibros(isbns));
+    }
+
 
     @Test
     void devolverLibros() {
