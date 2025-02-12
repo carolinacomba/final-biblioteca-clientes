@@ -26,7 +26,6 @@ public class LibroServiceImpl implements LibroService {
          */
         libro.setEstado(EstadoLibro.DISPONIBLE);
         return libroRepository.save(libro);
-
     }
 
     @Override
@@ -36,7 +35,6 @@ public class LibroServiceImpl implements LibroService {
          * Completar el metodo 
          */
         return libroRepository.findAll();
-        
     }
 
     @Override
@@ -54,11 +52,15 @@ public class LibroServiceImpl implements LibroService {
         /**
          * Completar el metodo
          */
-        Libro libro2 = libroRepository.findById(libro.getId()).orElseThrow(() -> new RuntimeException("Libro no encontrado"));
-        libro2.setTitulo(libro.getTitulo());
-        libro2.setAutor(libro.getAutor());
-        libro2.setIsbn(libro.getIsbn());
-        libro2.setEstado(libro.getEstado());
-        return libroRepository.save(libro2);
+        Libro libroEntity = libroRepository.findById(libro.getId()).orElse(null);
+        if (libroEntity != null) {
+            libroEntity.setAutor(libro.getAutor());
+            libroEntity.setTitulo(libro.getTitulo());
+            libroEntity.setIsbn(libro.getIsbn());
+            libroEntity.setEstado(libro.getEstado());
+            return libroRepository.save(libroEntity);
+        } else {
+            throw new RuntimeException("Libro no encontrado");
+        }
     }
 }

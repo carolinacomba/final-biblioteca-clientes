@@ -1,6 +1,5 @@
 package com.library.biblioteca.controller;
 
-import com.library.biblioteca.clients.PersonaRestClient;
 import com.library.biblioteca.dto.ClienteDTO;
 import com.library.biblioteca.enums.EstadoLibro;
 import com.library.biblioteca.model.Libro;
@@ -38,13 +37,10 @@ public class TestExamen {
     @Mock
     private RestTemplate restTemplate;
 
-    @Mock
-    private PersonaRestClient personaRestClient;
-
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-        bibliotecaService = new BibliotecaServiceImpl(personaRestClient, libroRepository, registroRepository, restTemplate);
+        bibliotecaService = new BibliotecaServiceImpl(libroRepository, registroRepository, restTemplate);
     }
 
     @Test
