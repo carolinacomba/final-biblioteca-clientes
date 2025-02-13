@@ -140,15 +140,18 @@ class BibliotecaServiceImplTest {
 
     @Test
     void informeSemanalTestHappyPath() {
+        LocalDate fechaInicio = LocalDate.now();
+        LocalDate fechaFin = fechaInicio.plusDays(7);
+
         List<Registro> registros = new ArrayList<>();
         registros.add(new Registro(1L, 1L, "Juan", LocalDate.now(), LocalDate.now(), new ArrayList<>(), null));
         registros.add(new Registro(2L, 2L, "Pedro", LocalDate.now(), LocalDate.now(), new ArrayList<>(), null));
 
-        when(registroRepository.findAll()).thenReturn(registros);
+        when(registroRepository.obtenerRegistrosSemana(fechaInicio, fechaFin)).thenReturn(registros);
 
-        BigDecimal actual = bibliotecaServiceImpl.informeSemanal(registros.get(0).getFechaReserva()).get(0).getTotal();
+        List<Registro> actual = bibliotecaServiceImpl.informeSemanal(fechaInicio);
 
-        assertEquals(BigDecimal.valueOf(0), actual);
+        assertEquals(registros, actual);
     }
 
     @Test
