@@ -20,6 +20,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import static javax.management.Query.eq;
 import static org.junit.jupiter.api.Assertions.*;
@@ -107,18 +108,59 @@ class BibliotecaServiceImplTest {
 
 
     @Test
-    void devolverLibros() {
+    void devolverLibrosTestHappyPath() {
+        Libro libro = new Libro();
+        libro.setEstado(EstadoLibro.RESERVADO);
+
+        Registro registro = new Registro();
+        registro.setId(1L);
+        registro.setFechaReserva(LocalDate.now().minusDays(3));
+        registro.setLibrosReservados(List.of(libro));
+
+        when(registroRepository.findById(1L)).thenReturn(Optional.of(registro));
+        when(registroRepository.save(any(Registro.class))).thenReturn(registro);
+
+        Registro actual = bibliotecaServiceImpl.devolverLibros(1L);
+
+        assertEquals(registro, actual);
     }
 
     @Test
-    void verTodosLosAlquileres() {
+    void verTodosLosAlquileresHappyPath() {
+        List<Registro> registros = new ArrayList<>();
+        registros.add(new Registro(1L, 1L, "Juan", LocalDate.now(), LocalDate.now(), new ArrayList<>(), null));
+        registros.add(new Registro(2L, 2L, "Pedro", LocalDate.now(), LocalDate.now(), new ArrayList<>(), null));
+
+        when(registroRepository.findAll()).thenReturn(registros);
+
+        List<Registro> actual = bibliotecaServiceImpl.verTodosLosAlquileres();
+
+        assertEquals(registros, actual);
     }
 
     @Test
-    void informeSemanal() {
+    void informeSemanalTestHappyPath() {
+        List<Registro> registros = new ArrayList<>();
+        registros.add(new Registro(1L, 1L, "Juan", LocalDate.now(), LocalDate.now(), new ArrayList<>(), null));
+        registros.add(new Registro(2L, 2L, "Pedro", LocalDate.now(), LocalDate.now(), new ArrayList<>(), null));
+
+        when(registroRepository.findAll()).thenReturn(registros);
+
+        BigDecimal actual = bibliotecaServiceImpl.informeSemanal(registros.get(0).getFechaReserva()).get(0).getTotal();
+
+        assertEquals(BigDecimal.valueOf(0), actual);
     }
 
     @Test
-    void informeLibrosMasAlquilados() {
+    void informeLibrosMasAlquiladosTestHappyPath() {
+        List<Registro> registros = new ArrayList<>();
+        registros.add(new Registro(1L, 1L, "Juan", LocalDate.now(), LocalDate.now(), new ArrayList<>(), null));
+        registros.add(new Registro(2L, 2L, "Pedro", LocalDate.now(), LocalDate.now(), new ArrayList<>(), null));
+
+        when(registroRepository.findAll()).thenReturn(registros);
+
+        List<Object[]> actual = bibliotecaServiceImpl.informeLibrosMasAlquilados();
+
+        assertEquals(new ArrayList<>(), actual);
     }
 }
