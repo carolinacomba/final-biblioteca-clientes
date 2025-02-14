@@ -3,21 +3,33 @@ services:
 
   # API Gateway
   api-gateway:
-  # TODO
-  # Completar microservicio
-  # puerto 8080
+    image: api-gateway
+    ports:
+      - "8080:8080"
+    networks:
+      - library-network
+    environment:
+      - spring.datasource.url=jdbc:mysql://mysqldb:3306/biblioteca_db_labo1?allowPublicKeyRetrieval=true
 
   # Clientes Service
   clientes-service:
-  # TODO
-  # Completar microservicio
-  # puerto 8081
+    image: clientes-service
+    ports:
+        - "8081:8081"
+    networks:
+        - library-network
 
   # Biblioteca Service
   biblioteca-service:
-  # TODO
-  # Completar microservicio
-  # puerto 8082
+    image: biblioteca-service
+    networks:
+      - library-network
+    ports:
+      - "8082:8082"
+    depends_on:
+      mysql-db:
+        condition: service_healthy
+
 
 
   # Servicio de base de datos MySQL
@@ -25,10 +37,8 @@ services:
     image: mysql:8.0
     container_name: biblioteca_db-mysql
     environment:
-      MYSQL_ROOT_PASSWORD: rootpassword
-      MYSQL_DATABASE: biblioteca_db
-      MYSQL_USER: tup
-      MYSQL_PASSWORD: tup
+      MYSQL_ROOT_PASSWORD: aca
+      MYSQL_DATABASE: biblioteca_db_labo1
     ports:
       - "3307:3306"
     expose:

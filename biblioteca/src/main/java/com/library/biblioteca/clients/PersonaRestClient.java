@@ -6,7 +6,7 @@ import org.springframework.web.client.RestTemplate;
 
 @Service
 public class PersonaRestClient {
-    String url = "http://localhost:8081/api/personas/aleatorio";
+    String url = "http://clientes-service/api/personas/aleatorio";
     RestTemplate restTemplate = new RestTemplate();
 
     public ClienteDTO getClienteAleatorio() {
